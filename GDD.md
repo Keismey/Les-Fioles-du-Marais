@@ -29,6 +29,7 @@ Liens : les patients indiquent quoi chercher ; les recettes débloquées changen
 
 ## Contraintes du hub
 Portrait, FR/EN via `?lang=`, `ks-back.js` (copié depuis un autre jeu du hub), clé localStorage unique `fioles_save_v1`, icône 192, couverture, entrée dans `games.js`, hors ligne.
+**Aucun déploiement sur le hub par Claude** : Claude ne touche jamais au dépôt keismey.github.io (ni `games.js`). Keismey intègre le jeu lui-même ; Claude peut au plus fournir le bloc `games.js` à copier.
 
 ## Méthode
 Une seule boucle jouable d'abord, puis une phase ou fonctionnalité à la fois.
