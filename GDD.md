@@ -21,6 +21,17 @@ Liens : les patients indiquent quoi chercher ; les recettes débloquées changen
 - **Dosage** : on maintient le doigt sur une fiole pour verser dans le chaudron, on relâche pour arrêter. Le liquide change de couleur et de niveau en direct ; on touille en cercles pour mélanger et contrôler la chaleur. Cible = une couleur et un niveau à atteindre ; trop verser gâche la potion.
 - **Diagnostic** : le patient est dessiné en grand ; on promène une loupe dessus et on agit au geste (tirer la paupière, sortir la langue, sentir le pouls en suivant un rythme). Les indices se notent seuls dans un carnet qui élimine les maladies possibles ; on désigne la maladie en la glissant sur le patient.
 
+## Cueillette : règles actuelles (phase 1 codée)
+- **Commandes** : le doigt est une cible sur l'eau. La barque rame vers lui (plus il est loin de la barque, plus elle va vite ; près de la barque, elle reste en place). La lanterne pointe vers le doigt.
+- **Lumière** : faisceau devant la barque + petit halo autour. L'éclairage diminue avec l'huile. Les plantes ne se voient que dans la lumière.
+- **Faucille** : trait rapide du doigt sur une plante à portée de la barque (~105 px) et éclairée. Les plantes pulsent : plus elle brille fort au moment du trait, meilleure est la qualité (★ à ★★★).
+- **Huile** : 100 au départ, baisse en continu (~2 min de nuit). Quand elle est vide, l'aube se lève : bilan, ingrédients ajoutés au stock et sauvegardés. Pause (retour du téléphone) : reprendre ou rentrer au village.
+- **Sangsue** : invisible dans le noir (juste des rides), recûle devant le faisceau, attaque par derrière/côtés : -12 huile. Un trait la tue (50 % de bave de sangsue).
+- **Feu follet** : visible de loin, attiré par la lumière ; s'il touche la barque il souffle la lanterne 3 s. Un trait le tue (40 % de poussière de feu follet).
+- **Marais** : 1400 × 2000 px, généré au hasard à chaque nuit (îlots-obstacles, 34 plantes, nouveautés plus rares quand on s'éloigne du ponton).
+- **Ingrédients** : 6 plantes (nénuphar lunaire, jonc fiévreux, mousse-lueur, ciguë d'eau, chapeau-cendre, fleur du pendu) + 2 butins de créatures (bave de sangsue, poussière de feu follet). Stock : `stock[id] = [★, ★★, ★★★]`.
+- Pas encore : eaux profondes, sons, vrais visuels, plusieurs marais.
+
 ## Évolution (méta)
 - Nouveaux marais (dangers et ingrédients propres)
 - Maladies rares, à symptômes ambigus
@@ -28,11 +39,20 @@ Liens : les patients indiquent quoi chercher ; les recettes débloquées changen
 - Génération aléatoire pour que deux parties ne se ressemblent pas
 
 ## Contraintes du hub
-Portrait, FR/EN via `?lang=`, `ks-back.js` (copié depuis un autre jeu du hub), clé localStorage unique `fioles_save_v1`, icône 192, couverture, entrée dans `games.js`, hors ligne.
-**Aucun déploiement sur le hub par Claude** : Claude ne touche jamais au dépôt keismey.github.io (ni `games.js`). Keismey intègre le jeu lui-même ; Claude peut au plus fournir le bloc `games.js` à copier.
+Portrait, FR/EN via `?lang=`, `ks-back.js` (copié d'un autre jeu du hub), clé localStorage unique `fioles_save_v1`, icône 192, couverture, entrée dans `games.js`, hors ligne.
+
+## Fichiers
+- `index.html`, `manifest*.webmanifest`, `sw.js` (hors ligne), `commun/ks-back.js`, `icons/icon-192.svg`, `couverture.svg` (provisoires)
+- `js/main.js` (démarrage, boucle) · `canvas.js` (écran) · `input.js` (doigt) · `i18n.js` + `lang/fr.js`, `lang/en.js` (textes)
+- `js/save.js` (sauvegarde) · `ingredients.js` (données) · `hasard.js` (hasard à graine)
+- `js/marais.js` (génération du marais) · `lumiere.js` (lanterne) · `dessin.js` (formes provisoires)
+- `js/cueillette.js` (phase 1) · `titre.js` · `bilan.js` (écrans)
+- Ajouter un fichier JS : l'ajouter aussi à la liste `FILES` de `sw.js`.
 
 ## Méthode
 Une seule boucle jouable d'abord, puis une phase ou fonctionnalité à la fois.
 
 ## État
-Rien de codé. Prochaine étape : une première boucle minimale (une cueillette, un dosage, un patient).
+- Phase 1 (cueillette) codée, visuels provisoires, à tester sur téléphone.
+- Pas encore dans `games.js` du hub (entrée à ajouter par l'utilisateur ou sur demande). Icône et couverture en SVG provisoires : à remplacer par de vraies images (PNG 192 / WebP).
+- Prochaine étape : brassage (phase 2), puis diagnostic (phase 3).
