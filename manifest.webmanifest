@@ -1,0 +1,16 @@
+{
+  "id": "./",
+  "name": "Les Fioles du Marais",
+  "short_name": "Fioles",
+  "description": "Cueille de nuit dans un marais dangereux, brasse des potions, soigne des patients.",
+  "lang": "fr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b1d22",
+  "theme_color": "#0b1d22",
+  "icons": [
+    { "src": "icons/icon-192.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

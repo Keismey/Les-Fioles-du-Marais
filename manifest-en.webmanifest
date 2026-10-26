@@ -1,0 +1,16 @@
+{
+  "id": "./",
+  "name": "The Vials of the Marsh",
+  "short_name": "Marsh Vials",
+  "description": "Gather by night in a dangerous marsh, brew potions, heal patients.",
+  "lang": "en",
+  "start_url": "./?lang=en",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b1d22",
+  "theme_color": "#0b1d22",
+  "icons": [
+    { "src": "icons/icon-192.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

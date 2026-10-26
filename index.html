@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#0b1d22">
+<title>Les Fioles du Marais</title>
+<meta name="description" content="Cueille de nuit dans un marais dangereux, brasse des potions, soigne des patients aux symptômes troubles.">
+<link rel="icon" type="image/svg+xml" href="icons/icon-192.svg">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Les Fioles du Marais">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Keismey Studio">
+<meta property="og:title" content="Les Fioles du Marais">
+<meta property="og:description" content="Cueille de nuit dans un marais dangereux, brasse des potions, soigne des patients aux symptômes troubles.">
+<meta property="og:url" content="https://keismey.github.io/Les-Fioles-du-Marais/">
+<meta property="og:locale" content="fr_FR">
+<meta property="og:locale:alternate" content="en_GB">
+<link rel="manifest" id="manifest" href="manifest.webmanifest">
+<script>
+  // fiche d'installation en anglais si le jeu est en anglais (lien ?lang=, choix mémorisé ou langue du téléphone)
+  (function () {
+    var l = new URLSearchParams(location.search).get('lang');
+    try { l = l || (JSON.parse(localStorage.getItem('fioles_save_v1') || '{}').settings || {}).lang; } catch (e) {}
+    l = l || ((navigator.language || 'en').toLowerCase().indexOf('fr') === 0 ? 'fr' : 'en');
+    if (l === 'en') document.getElementById('manifest').href = 'manifest-en.webmanifest';
+  })();
+</script>
+<style>
+  html, body {
+    margin: 0; height: 100%; overflow: hidden; background: #050e11;
+    -webkit-user-select: none; user-select: none;
+    -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent;
+  }
+  body { display: flex; align-items: center; justify-content: center; }
+  canvas { display: block; touch-action: none; }
+</style>
+</head>
+<body>
+<canvas id="jeu"></canvas>
+<script src="commun/ks-back.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
