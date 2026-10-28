@@ -23,6 +23,7 @@ const FILES = [
   'js/marais.js',
   'js/lumiere.js',
   'js/dessin.js',
+  'js/barque.js',
   'js/cueillette.js',
   'js/titre.js',
   'js/bilan.js',

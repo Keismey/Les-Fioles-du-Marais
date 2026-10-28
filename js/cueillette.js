@@ -5,8 +5,8 @@ import * as D from './dessin.js';
 import { INGREDIENTS, ORDRE } from './ingredients.js';
 import { t } from './i18n.js';
 import { ecran } from './canvas.js';
+import { piloter } from './barque.js';
 
-const VMAX = 120;            // vitesse maxi de la barque (px/s)
 const PORTEE = 105;          // portée de la faucille autour de la barque
 const VITESSE_TRAIT = 380;   // vitesse minimale du doigt pour que ce soit un coup de faucille
 const HUILE_PAR_S = 0.85;    // une nuit dure environ 2 minutes
@@ -30,16 +30,18 @@ export function cueillette(jeu) {
     n = {
       m, bat: { x: m.depart.x, y: m.depart.y, vx: 0, vy: 0, cap: -Math.PI / 2 }, vit: 0,
       huile: 100, t: 0, eteint: 0, fin: 0, pause: false, trembler: 0, doigt: null,
-      cam: { x: 0, y: 0 }, cr: [], butin: {}, fx: [], textes: [], traits: [],
+      cam: { x: 0, y: 0 }, cr: [], butin: {}, fx: [], textes: [], traits: [], rides: [], sillage: 0,
       prochSang: 9, prochFeu: 24, aide: jeu.save.nuits < 2,
     };
-    camera(); n.L = lanterneEtat(n);
+    camera(true); n.L = lanterneEtat(n);
   };
 
-  const camera = () => {
+  // la caméra suit en douceur et regarde un peu devant la barque
+  const camera = (snap, dt) => {
     const { W, H } = ecran, b = n.bat;
-    n.cam.x = borne(b.x - W / 2, 0, n.m.w - W);
-    n.cam.y = borne(b.y - H * 0.6, 0, n.m.h - H);
+    const tx = borne(b.x + b.vx * 0.35 - W / 2, 0, n.m.w - W), ty = borne(b.y + b.vy * 0.35 - H * 0.6, 0, n.m.h - H);
+    const k = snap ? 1 : Math.min(1, dt * 5);
+    n.cam.x += (tx - n.cam.x) * k; n.cam.y += (ty - n.cam.y) * k;
   };
 
   function ajouter(id, q) { (n.butin[id] || (n.butin[id] = [0, 0, 0]))[q - 1]++; }
@@ -50,28 +52,13 @@ export function cueillette(jeu) {
 
   // ---------- barque ----------
   function barque(dt) {
-    const b = n.bat, sx = b.x - n.cam.x, sy = b.y - n.cam.y;
-    let tx = 0, ty = 0;
-    if (n.doigt && !n.fin) {
-      const dx = n.doigt.x - sx, dy = n.doigt.y - sy, d = Math.hypot(dx, dy), ang = Math.atan2(dy, dx);
-      if (d > 14) { let da = ang - b.cap; da = Math.atan2(Math.sin(da), Math.cos(da)); b.cap += da * Math.min(1, dt * 7); }
-      const v = VMAX * borne((d - 28) / 140, 0, 1);
-      tx = Math.cos(ang) * v; ty = Math.sin(ang) * v;
-    }
-    const k = Math.min(1, dt * (n.doigt ? 3.2 : 1.6));
-    b.vx += (tx - b.vx) * k; b.vy += (ty - b.vy) * k;
-    b.x += b.vx * dt; b.y += b.vy * dt;
-    for (const o of n.m.ilots) {
-      const dx = b.x - o.x, dy = b.y - o.y, d = Math.hypot(dx, dy), min = o.r + 16;
-      if (d < min && d > 0) {
-        b.x = o.x + dx / d * min; b.y = o.y + dy / d * min;
-        const dot = (b.vx * dx + b.vy * dy) / d;
-        if (dot < 0) { b.vx -= dot * dx / d; b.vy -= dot * dy / d; }
-      }
-    }
-    b.x = borne(b.x, 60, n.m.w - 60); b.y = borne(b.y, 60, n.m.h - 60);
-    n.vit = Math.hypot(b.vx, b.vy);
-    camera();
+    const d = n.doigt, b = n.bat;
+    if (d && d.gel > 0) { d.gel -= dt; if (d.gel <= 0) { d.ox = d.fx; d.oy = d.fy; d.x = d.fx; d.y = d.fy; } }   // après un coup de faucille, le doigt redevient le centre du joystick
+    piloter(b, dt, d && !n.fin ? { dx: d.x - d.ox, dy: d.y - d.oy } : null, n.m);
+    n.vit = b.vit;
+    n.sillage -= dt;
+    if (b.vit > 40 && n.sillage <= 0) { n.sillage = 0.14; n.rides.push({ x: b.x - Math.cos(b.cap) * 16, y: b.y - Math.sin(b.cap) * 16, l: 0.9, m: 0.9 }); }
+    camera(false, dt);
   }
 
   // ---------- faucille ----------
@@ -82,6 +69,7 @@ export function cueillette(jeu) {
     const pu = pulse(p), q = pu > 0.82 ? 3 : pu > 0.45 ? 2 : 1;   // plus elle brille fort, meilleure elle est
     ajouter(p.id, q);
     const col = INGREDIENTS[p.id].couleur;
+    if (q === 3) { n.huile = Math.min(100, n.huile + 4); texte(p.x + 26, p.y - 26, '+4', '#ffc861'); }   // une cueillette parfaite rallonge la nuit
     gerbe(p.x, p.y, col, 8 + q * 4);
     texte(p.x, p.y - 14, t('ing.' + p.id) + ' ' + '★'.repeat(q), col);
     jeu.vib(q === 3 ? [12, 30, 12] : 12);
@@ -142,7 +130,7 @@ export function cueillette(jeu) {
         let v, ux, uy;
         if (c.etat === 'fuite') { c.mem -= dt; v = 70; ux = -dx / d; uy = -dy / d; if (c.mem <= 0) c.etat = 'chasse'; }
         else if (cone(n.L, c.x, c.y) > 0.25) { v = 42; ux = -dx / d; uy = -dy / d; }   // elle recule devant le faisceau
-        else { v = 64; ux = dx / d; uy = dy / d; }                                      // mais rôde dans le noir
+        else { v = 80; ux = dx / d; uy = dy / d; }                                      // mais rôde dans le noir
         const lat = Math.sin(n.t * 3 + c.ph) * 18;
         c.x += (ux * v - uy * lat) * dt; c.y += (uy * v + ux * lat) * dt;
         c.ang = Math.atan2(uy, ux);
@@ -173,6 +161,8 @@ export function cueillette(jeu) {
     n.fx = n.fx.filter((f) => f.l > 0);
     for (const x of n.textes) { x.y -= 18 * dt; x.l -= dt; }
     n.textes = n.textes.filter((x) => x.l > 0);
+    for (const x of n.rides) x.l -= dt;
+    n.rides = n.rides.filter((x) => x.l > 0);
     for (const x of n.traits) x.a -= dt * 5;
     n.traits = n.traits.filter((x) => x.a > 0);
   }
@@ -197,10 +187,15 @@ export function cueillette(jeu) {
     effets(dt);
   };
 
-  S.down = (x, y) => { if (n && !n.pause && !n.fin) n.doigt = { x, y }; };
+  S.down = (x, y) => { if (n && !n.pause && !n.fin) n.doigt = { ox: x, oy: y, x, y, fx: x, fy: y, gel: 0 }; };
   S.move = (x, y, px, py, dt) => {
     if (!n || n.pause || n.fin) return;
-    if (n.doigt) { n.doigt.x = x; n.doigt.y = y; }
+    const d = n.doigt;
+    if (d) {
+      d.fx = x; d.fy = y;
+      if (Math.hypot(x - px, y - py) / Math.max(dt, 0.008) >= VITESSE_TRAIT) d.gel = 0.3;   // geste rapide = faucille : la barque garde son cap
+      else if (d.gel <= 0) { d.x = x; d.y = y; }
+    }
     trait(px, py, x, y, dt);
   };
   S.up = () => { if (n) n.doigt = null; };
@@ -233,7 +228,7 @@ export function cueillette(jeu) {
     for (const p of n.m.plantes) {                       // les plantes n'existent que dans la lumière
       if (!p.vivante) continue;
       const lum = eclairage(L, p.x, p.y);
-      if (lum < 0.03) continue;
+      if (lum < 0.03) { balise(ctx, p); continue; }
       const pu = pulse(p), br = lum * (0.4 + 0.6 * pu), col = INGREDIENTS[p.id].couleur;
       ctx.save(); ctx.globalCompositeOperation = 'lighter'; D.lueur(ctx, p.x, p.y, 24 + 12 * pu, col, 0.55 * br); ctx.restore();
       D.icone(ctx, p.id, p.x, p.y, 1.1 + 0.12 * pu, Math.min(1, lum * 1.6));
@@ -249,6 +244,7 @@ export function cueillette(jeu) {
         ctx.strokeStyle = `rgba(127,184,200,${0.2 * (1 - ph)})`; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(c.x, c.y, 4 + ph * 14, 0, PI2); ctx.stroke();
       }
     }
+    for (const r of n.rides) { const u = r.l / r.m; ctx.strokeStyle = `rgba(170,210,220,${0.22 * u})`; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(r.x, r.y, 3 + (1 - u) * 16, 0, PI2); ctx.stroke(); }
     D.barque(ctx, n.bat, n.t, n.vit, n.eteint <= 0 && n.huile > 0);
     for (const f of n.fx) { ctx.globalAlpha = f.l / f.m; ctx.fillStyle = f.col; ctx.beginPath(); ctx.arc(f.x, f.y, f.r * (f.l / f.m) + 0.5, 0, PI2); ctx.fill(); }
     ctx.globalAlpha = 1;
@@ -263,6 +259,14 @@ export function cueillette(jeu) {
     hud(ctx); aide(ctx);
     if (n.pause) pause(ctx);
   };
+
+  // plante hors lumière : un scintillement lointain qui montre où aller (plus fort pour les rares)
+  function balise(ctx, p) {
+    const d = Math.hypot(p.x - n.bat.x, p.y - n.bat.y);
+    if (d > 560) return;
+    const rare = INGREDIENTS[p.id].rare, a = (0.2 + 0.15 * Math.sin(n.t * 3 + p.ph)) * (1 - d / 560) * (1 + rare * 0.8);
+    ctx.save(); ctx.globalCompositeOperation = 'lighter'; D.lueur(ctx, p.x, p.y, 5 + rare * 3, INGREDIENTS[p.id].couleur, Math.min(1, a * 2.2)); ctx.restore();
+  }
 
   function hud(ctx) {
     const { W } = ecran, y = ecran.hautSur + 14, f = borne(n.huile / 100, 0, 1);
