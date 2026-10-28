@@ -6,9 +6,10 @@ import { INGREDIENTS, ORDRE } from './ingredients.js';
 import { t } from './i18n.js';
 import { ecran } from './canvas.js';
 import { piloter } from './barque.js';
+import { pave, dansPave, dessinerPave } from './pave.js';
 
 const PORTEE = 105;          // portée de la faucille autour de la barque
-const VITESSE_TRAIT = 200;   // vitesse minimale du pouce droit pour que ce soit un coup de faucille
+const VITESSE_TRAIT = 200;   // vitesse minimale du doigt pour que ce soit un coup de faucille
 const HUILE_PAR_S = 0.85;    // une nuit dure environ 2 minutes
 const MORSURE = 12;          // huile perdue par morsure de sangsue
 const PI2 = Math.PI * 2;
@@ -52,8 +53,8 @@ export function cueillette(jeu) {
 
   // ---------- barque ----------
   function barque(dt) {
-    const d = n.doigt, b = n.bat;
-    piloter(b, dt, d && !n.fin ? { dx: d.x - d.ox, dy: d.y - d.oy } : null, n.m);
+    const d = n.doigt, b = n.bat, p = pave();
+    piloter(b, dt, d && !n.fin ? { dx: d.x - p.x, dy: d.y - p.y } : null, n.m);
     n.vit = b.vit;
     n.sillage -= dt;
     if (b.vit > 40 && n.sillage <= 0) { n.sillage = 0.14; n.rides.push({ x: b.x - Math.cos(b.cap) * 16, y: b.y - Math.sin(b.cap) * 16, l: 0.9, m: 0.9 }); }
@@ -186,10 +187,10 @@ export function cueillette(jeu) {
     effets(dt);
   };
 
-  // Pouce gauche (moitié gauche de l'écran) = ramer, pouce droit (moitié droite) = faucille.
+  // Un doigt qui se pose sur le pavé (en bas à gauche) rame ; un doigt posé ailleurs = faucille.
   S.down = (x, y, id) => {
     if (!n || n.pause || n.fin) return;
-    if (x < ecran.W / 2) { if (!n.doigt) n.doigt = { id, ox: x, oy: y, x, y }; }
+    if (dansPave(x, y)) { if (!n.doigt) n.doigt = { id, x, y }; }
     else if (n.faux === null) n.faux = id;
   };
   S.move = (x, y, px, py, dt, id) => {
@@ -258,11 +259,7 @@ export function cueillette(jeu) {
       ctx.strokeStyle = `rgba(235,245,255,${x.a})`; ctx.lineWidth = 1 + 3 * x.a; ctx.lineCap = 'round';
       ctx.beginPath(); ctx.moveTo(x.x1, x.y1); ctx.lineTo(x.x2, x.y2); ctx.stroke();
     }
-    if (n.doigt) {                                        // joystick flottant : anneau + poignée
-      const d = n.doigt, dx = d.x - d.ox, dy = d.y - d.oy, l = Math.hypot(dx, dy) || 1, k = Math.min(1, 50 / l);
-      ctx.strokeStyle = 'rgba(255,230,180,.28)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(d.ox, d.oy, 50, 0, PI2); ctx.stroke();
-      ctx.fillStyle = 'rgba(255,230,180,.4)'; ctx.beginPath(); ctx.arc(d.ox + dx * k, d.oy + dy * k, 16, 0, PI2); ctx.fill();
-    }
+    dessinerPave(ctx, n.doigt);
     if (n.fin > 0.8) { ctx.fillStyle = D.rgba('#16303a', borne((n.fin - 0.8) / 1.2, 0, 1)); ctx.fillRect(0, 0, W, H); }
     hud(ctx); aide(ctx);
     if (n.pause) pause(ctx);
@@ -293,7 +290,7 @@ export function cueillette(jeu) {
     const i = Math.floor(n.t / 4), fr = (n.t % 4) / 4;
     const a = Math.min(1, fr * 8, (1 - fr) * 8);
     ctx.globalAlpha = a * 0.9;
-    D.ecrire(ctx, t('aide' + (i + 1)), ecran.W / 2, ecran.H - 60, 15, '#f6efd8');
+    D.ecrire(ctx, t('aide' + (i + 1)), ecran.W / 2, ecran.H - 200, 15, '#f6efd8');
     ctx.globalAlpha = 1;
   }
 

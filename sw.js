@@ -24,6 +24,7 @@ const FILES = [
   'js/lumiere.js',
   'js/dessin.js',
   'js/barque.js',
+  'js/pave.js',
   'js/cueillette.js',
   'js/titre.js',
   'js/bilan.js',
