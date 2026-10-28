@@ -21,7 +21,7 @@ Liens : les patients indiquent quoi chercher ; les recettes débloquées changen
 - **Dosage** : on maintient le doigt sur une fiole pour verser dans le chaudron, on relâche pour arrêter. Le liquide change de couleur et de niveau en direct ; on touille en cercles pour mélanger et contrôler la chaleur. Cible = une couleur et un niveau à atteindre ; trop verser gâche la potion.
 - **Diagnostic** : le patient est dessiné en grand ; on promène une loupe dessus et on agit au geste (tirer la paupière, sortir la langue, sentir le pouls en suivant un rythme). Les indices se notent seuls dans un carnet qui élimine les maladies possibles ; on désigne la maladie en la glissant sur le patient.
 
-## Cueillette : règles actuelles (phase 1 codée)
+## Cueillette : règles actuelles (phase 1 codée et validée)
 - **Commandes (deux pouces)** : un **pavé de navigation fixe, toujours affiché, en bas à gauche** (anneau + poignée). Un doigt qui se pose dessus (zone ~92 px) rame : direction = poignée par rapport au centre du pavé, pleine vitesse à ~52 px. La barque répond vite, la lanterne pointe dans sa direction, elle s'arrête quand on lève le doigt. **Tout doigt posé ailleurs = faucille**, sur tout le reste de l'écran. Les deux marchent en même temps. Caméra douce qui regarde un peu devant.
 - **Faucille** : trait rapide (> 200 px/s) qui croise une plante à portée de la barque (~105 px) et éclairée.
 - **Qualité** : les plantes pulsent ; plus elle brille fort au moment du trait, meilleure est la qualité (★ à ★★★). Une ★★★ rend +4 d'huile.
@@ -54,6 +54,6 @@ Portrait, FR/EN via `?lang=`, `ks-back.js` (copié d'un autre jeu du hub), clé 
 Une seule boucle jouable d'abord, puis une phase ou fonctionnalité à la fois.
 
 ## État
-- Phase 1 (cueillette) codée, visuels provisoires. Version 4 : pavé fixe en bas à gauche + faucille sur tout le reste de l'écran (v1 : pilotage peu agréable ; v2 : impossible de ramer et couper d'un seul doigt ; v3 : moitiés gauche/droite, mais rien à couper à gauche). À tester sur téléphone.
+- Phase 1 (cueillette) : codée et validée par l'utilisateur après 4 versions du pilotage (version finale : pavé fixe en bas à gauche + faucille sur le reste de l'écran). Visuels provisoires.
 - Pas encore dans `games.js` du hub. Icône et couverture en SVG provisoires : à remplacer par de vraies images (PNG 192 / WebP).
-- Prochaine étape : valider la cueillette, puis brassage (phase 2), puis diagnostic (phase 3).
+- Prochaine étape : brassage (phase 2), puis diagnostic (phase 3). Le brassage lit le stock `stock[id]` de la sauvegarde.
