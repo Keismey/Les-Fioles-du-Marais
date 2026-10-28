@@ -22,13 +22,14 @@ Liens : les patients indiquent quoi chercher ; les recettes débloquées changen
 - **Diagnostic** : le patient est dessiné en grand ; on promène une loupe dessus et on agit au geste (tirer la paupière, sortir la langue, sentir le pouls en suivant un rythme). Les indices se notent seuls dans un carnet qui élimine les maladies possibles ; on désigne la maladie en la glissant sur le patient.
 
 ## Cueillette : règles actuelles (phase 1 codée)
-- **Commandes** : le doigt est une cible sur l'eau. La barque rame vers lui (plus il est loin de la barque, plus elle va vite ; près de la barque, elle reste en place). La lanterne pointe vers le doigt.
-- **Lumière** : faisceau devant la barque + petit halo autour. L'éclairage diminue avec l'huile. Les plantes ne se voient que dans la lumière.
-- **Faucille** : trait rapide du doigt sur une plante à portée de la barque (~105 px) et éclairée. Les plantes pulsent : plus elle brille fort au moment du trait, meilleure est la qualité (★ à ★★★).
-- **Huile** : 100 au départ, baisse en continu (~2 min de nuit). Quand elle est vide, l'aube se lève : bilan, ingrédients ajoutés au stock et sauvegardés. Pause (retour du téléphone) : reprendre ou rentrer au village.
+- **Commandes** : joystick flottant. Là où le doigt se pose = centre ; on glisse vers la direction voulue (plus on glisse, plus la barque va vite, jusqu'à ~50 px). La barque répond vite, la lanterne pointe dans la direction de la barque. Doigt levé = elle ralentit et s'arrête. Caméra douce qui regarde un peu devant.
+- **Faucille** : geste *rapide* du doigt (> 380 px/s) sur une plante à portée (~105 px) et éclairée. Pendant 0,3 s après un coup de faucille, la barque garde son cap ; ensuite le doigt redevient le centre du joystick (la barque s'arrête jusqu'au prochain glissement).
+- **Qualité** : les plantes pulsent ; plus elle brille fort au moment du trait, meilleure est la qualité (★ à ★★★). Une ★★★ rend +4 d'huile.
+- **Lumière** : faisceau devant la barque + petit halo autour. Diminue avec l'huile. Les plantes ne se voient que dans la lumière ; hors lumière elles scintillent faiblement de loin (plus fort pour les rares) pour indiquer où aller.
+- **Huile** : 100 au départ, baisse en continu (~2 min de nuit). Vide = l'aube se lève : bilan, ingrédients ajoutés au stock et sauvegardés. Pause (retour du téléphone) : reprendre ou rentrer au village.
 - **Sangsue** : invisible dans le noir (juste des rides), recûle devant le faisceau, attaque par derrière/côtés : -12 huile. Un trait la tue (50 % de bave de sangsue).
 - **Feu follet** : visible de loin, attiré par la lumière ; s'il touche la barque il souffle la lanterne 3 s. Un trait le tue (40 % de poussière de feu follet).
-- **Marais** : 1400 × 2000 px, généré au hasard à chaque nuit (îlots-obstacles, 34 plantes, nouveautés plus rares quand on s'éloigne du ponton).
+- **Marais** : 1400 × 2000 px, généré au hasard à chaque nuit (îlots-obstacles, 34 plantes, plus rares quand on s'éloigne du ponton).
 - **Ingrédients** : 6 plantes (nénuphar lunaire, jonc fiévreux, mousse-lueur, ciguë d'eau, chapeau-cendre, fleur du pendu) + 2 butins de créatures (bave de sangsue, poussière de feu follet). Stock : `stock[id] = [★, ★★, ★★★]`.
 - Pas encore : eaux profondes, sons, vrais visuels, plusieurs marais.
 
@@ -45,7 +46,7 @@ Portrait, FR/EN via `?lang=`, `ks-back.js` (copié d'un autre jeu du hub), clé 
 - `index.html`, `manifest*.webmanifest`, `sw.js` (hors ligne), `commun/ks-back.js`, `icons/icon-192.svg`, `couverture.svg` (provisoires)
 - `js/main.js` (démarrage, boucle) · `canvas.js` (écran) · `input.js` (doigt) · `i18n.js` + `lang/fr.js`, `lang/en.js` (textes)
 - `js/save.js` (sauvegarde) · `ingredients.js` (données) · `hasard.js` (hasard à graine)
-- `js/marais.js` (génération du marais) · `lumiere.js` (lanterne) · `dessin.js` (formes provisoires)
+- `js/marais.js` (génération du marais) · `lumiere.js` (lanterne) · `dessin.js` (formes provisoires) · `barque.js` (pilotage)
 - `js/cueillette.js` (phase 1) · `titre.js` · `bilan.js` (écrans)
 - Ajouter un fichier JS : l'ajouter aussi à la liste `FILES` de `sw.js`.
 
@@ -53,6 +54,6 @@ Portrait, FR/EN via `?lang=`, `ks-back.js` (copié d'un autre jeu du hub), clé 
 Une seule boucle jouable d'abord, puis une phase ou fonctionnalité à la fois.
 
 ## État
-- Phase 1 (cueillette) codée, visuels provisoires, à tester sur téléphone.
-- Pas encore dans `games.js` du hub (entrée à ajouter par l'utilisateur ou sur demande). Icône et couverture en SVG provisoires : à remplacer par de vraies images (PNG 192 / WebP).
-- Prochaine étape : brassage (phase 2), puis diagnostic (phase 3).
+- Phase 1 (cueillette) codée, visuels provisoires. 2e version du pilotage (joystick flottant) à tester sur téléphone ; retour utilisateur v1 : pilotage peu agréable, gameplay pas assez enthousiasmant.
+- Pas encore dans `games.js` du hub. Icône et couverture en SVG provisoires : à remplacer par de vraies images (PNG 192 / WebP).
+- Prochaine étape : valider la cueillette, puis brassage (phase 2), puis diagnostic (phase 3).
