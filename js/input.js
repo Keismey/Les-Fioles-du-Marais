@@ -1,32 +1,32 @@
 import { ecran } from './canvas.js';
 
-// Un seul doigt à la fois. Chaque scène reçoit down / move / up / tap (coordonnées logiques).
+// Plusieurs doigts à la fois (jusqu'à 3). Chaque scène reçoit, avec le numéro du doigt :
+// down(x,y,id) / move(x,y,px,py,dt,id) / up(x,y,id) / tap(x,y)  (coordonnées logiques).
 export function brancherEntrees(cv, scene) {
-  let actif = null, dep = null;
+  const doigts = new Map();
   const pos = (e) => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width * ecran.W, (e.clientY - r.top) / r.height * ecran.H]; };
   cv.addEventListener('pointerdown', (e) => {
-    if (actif !== null) return;
-    actif = e.pointerId;
-    try { cv.setPointerCapture(actif); } catch (_) {}
+    if (doigts.size >= 3 || doigts.has(e.pointerId)) return;
+    try { cv.setPointerCapture(e.pointerId); } catch (_) {}
     const [x, y] = pos(e);
-    dep = { x, y, t: e.timeStamp, max: 0, px: x, py: y, pt: e.timeStamp };
-    const s = scene(); if (s.down) s.down(x, y);
+    doigts.set(e.pointerId, { x, y, t: e.timeStamp, max: 0, px: x, py: y, pt: e.timeStamp });
+    const s = scene(); if (s.down) s.down(x, y, e.pointerId);
     e.preventDefault();
   });
   cv.addEventListener('pointermove', (e) => {
-    if (e.pointerId !== actif) return;
+    const d = doigts.get(e.pointerId); if (!d) return;
     const [x, y] = pos(e);
-    const dt = (e.timeStamp - dep.pt) / 1000;
-    dep.max = Math.max(dep.max, Math.hypot(x - dep.x, y - dep.y));
-    const s = scene(); if (s.move) s.move(x, y, dep.px, dep.py, dt);
-    dep.px = x; dep.py = y; dep.pt = e.timeStamp;
+    const dt = (e.timeStamp - d.pt) / 1000;
+    d.max = Math.max(d.max, Math.hypot(x - d.x, y - d.y));
+    const s = scene(); if (s.move) s.move(x, y, d.px, d.py, dt, e.pointerId);
+    d.px = x; d.py = y; d.pt = e.timeStamp;
   });
   const fin = (e) => {
-    if (e.pointerId !== actif) return;
-    const [x, y] = pos(e), s = scene(), court = dep.max < 14 && e.timeStamp - dep.t < 500;
-    if (s.up) s.up(x, y);
+    const d = doigts.get(e.pointerId); if (!d) return;
+    const [x, y] = pos(e), s = scene(), court = d.max < 14 && e.timeStamp - d.t < 500;
+    if (s.up) s.up(x, y, e.pointerId);
     if (court && e.type === 'pointerup' && s.tap) s.tap(x, y);
-    actif = null; dep = null;
+    doigts.delete(e.pointerId);
   };
   cv.addEventListener('pointerup', fin);
   cv.addEventListener('pointercancel', fin);
